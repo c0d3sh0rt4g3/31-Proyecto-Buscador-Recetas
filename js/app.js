@@ -20,6 +20,15 @@ const getFoodByCategory = (e) =>{
         .then(data => showFoodByCategory(data.meals))
 }
 
+const getFoodDetailsById = (id) =>{
+    const url = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`
+    fetch(url)
+        .then(result => result.json())
+        .then(data => showRecipeDetails(data.meals[0]))
+}
+
+const modal = new bootstrap.Modal("#modal", {})
+
 /*
 * idCategory: "1"
 strCategory: "Beef"
@@ -42,7 +51,7 @@ const showCategories = (categories) =>{
 * idMeal: "52959"
 * */
 const showFoodByCategory = (meals) =>{
-    resultContainer.innerHTML = ""
+    cleanseMealResults()
     meals.forEach(meal => {
         const allRecipesContainer = document.createElement("div")
         allRecipesContainer.classList.add("col-md-4")
@@ -68,8 +77,10 @@ const showFoodByCategory = (meals) =>{
 
         recipeButton.classList.add("btn", "btn-danger", "btn-primary")
         recipeButton.setAttribute("id", idMeal)
-        recipeButton.textContent = "Add to favorites"
-
+        recipeButton.textContent = "View recipe"
+        recipeButton.onclick = () =>{
+            getFoodDetailsById(idMeal)
+        }
         recipeDiv.appendChild(recipeHeading)
         recipeDiv.appendChild(recipeImg)
         recipeDiv.appendChild(recipeButton)
@@ -77,6 +88,44 @@ const showFoodByCategory = (meals) =>{
         allRecipesContainer.appendChild(recipeDiv)
         resultContainer.appendChild(allRecipesContainer)
     })
+}
+
+const showRecipeDetails = (recipeDetails) =>{
+    const {idMeal, strInstructions, strMeal, strMealThumb} = recipeDetails
+    const modalTitle = document.querySelector(".modal .modal-title")
+    const modalBody = document.querySelector(".modal .modal-body")
+
+    modalTitle.textContent = strMeal
+    modalBody.innerHTML =`
+        <img class="img-fluid" src="${strMealThumb}" alt="${strMeal}">
+        <h3 class="my-3">Instructions</h3>
+        <p>${strInstructions}</p>
+    `
+
+    const listGroup = document.createElement("ul")
+    listGroup.classList.add("list-group")
+
+    for (let i = 0; i <= 20; i++){
+        if (recipeDetails[`strIngredient${i}`]){
+            const ingredient = recipeDetails[`strIngredient${i}`]
+            const amount = recipeDetails[`strMeasure${i}`]
+
+            const ingredientLi = document.createElement("li")
+            ingredientLi.classList.add("list-group-item")
+            ingredientLi.textContent = `${amount} - ${ingredient}`
+
+            listGroup.appendChild(ingredientLi)
+        }
+    }
+
+    modalBody.appendChild(listGroup)
+    modal.show()
+}
+
+const cleanseMealResults = () =>{
+    while (resultContainer.firstChild){
+        resultContainer.removeChild(resultContainer.firstChild)
+    }
 }
 
 document.addEventListener("DOMContentLoaded", startApp)
