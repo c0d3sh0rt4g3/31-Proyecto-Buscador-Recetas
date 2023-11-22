@@ -51,7 +51,7 @@ const showCategories = (categories) =>{
 * idMeal: "52959"
 * */
 const showFoodByCategory = (meals) =>{
-    cleanseMealResults()
+    cleanseHtml(resultContainer)
     meals.forEach(meal => {
         const allRecipesContainer = document.createElement("div")
         allRecipesContainer.classList.add("col-md-4")
@@ -118,14 +118,53 @@ const showRecipeDetails = (recipeDetails) =>{
         }
     }
 
+    const modalFooter = document.querySelector(".modal-footer")
+
+    const saveFavBtn = document.createElement("button")
+    const closeCardBtn = document.createElement("button")
+
+    cleanseHtml(modalFooter)
+
+    saveFavBtn.classList.add("btn", "btn-danger", "col")
+    saveFavBtn.textContent = "Save as favorite"
+    saveFavBtn.onclick = () =>{
+        if (alreadyInFavs(recipeDetails.idMeal)){
+            console.log(`${recipeDetails.strMeal} already exists on local storage`)
+        }else {
+            addToFavs({id: idMeal, title: strMeal, img: strMealThumb})
+        }
+    }
+
+    closeCardBtn.classList.add("btn", "btn-secondary", "col")
+    closeCardBtn.textContent = "Close"
+    closeCardBtn.onclick = () =>{
+        modal.hide()
+    }
+
     modalBody.appendChild(listGroup)
+    modalFooter.appendChild(saveFavBtn)
+    modalFooter.appendChild(closeCardBtn)
+
+
+
     modal.show()
 }
 
-const cleanseMealResults = () =>{
-    while (resultContainer.firstChild){
-        resultContainer.removeChild(resultContainer.firstChild)
+const cleanseHtml = (target) =>{
+    while (target.firstChild){
+        target.removeChild(target.firstChild)
     }
+}
+
+const addToFavs = (recipe) => {
+    console.log(recipe)
+    const favRecipes = JSON.parse(localStorage.getItem("favRecipes")) ?? []
+    localStorage.setItem("favRecipes", JSON.stringify([...favRecipes, recipe]))
+}
+
+const alreadyInFavs = (id) =>{
+    const favRecipes = JSON.parse(localStorage.getItem("favRecipes")) ?? []
+    return favRecipes.some((favRecipes) => favRecipes.id === id)
 }
 
 document.addEventListener("DOMContentLoaded", startApp)
