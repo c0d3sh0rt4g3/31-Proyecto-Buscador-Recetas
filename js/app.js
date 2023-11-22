@@ -124,14 +124,25 @@ const showRecipeDetails = (recipeDetails) =>{
     const closeCardBtn = document.createElement("button")
 
     cleanseHtml(modalFooter)
-
-    saveFavBtn.classList.add("btn", "btn-danger", "col")
-    saveFavBtn.textContent = "Save as favorite"
+    alreadyInFavs(idMeal)
+        ?saveFavBtn.classList.add("btn", "btn-warning", "col")
+        :saveFavBtn.classList.add("btn", "btn-danger", "col")
+    saveFavBtn.textContent = alreadyInFavs(idMeal)
+        ?"Delete from favorites"
+        :"Save as favorite"
     saveFavBtn.onclick = () =>{
-        if (alreadyInFavs(recipeDetails.idMeal)){
-            console.log(`${recipeDetails.strMeal} already exists on local storage`)
-        }else {
+        if (alreadyInFavs(idMeal)){
+            deleteFavs(idMeal)
+            saveFavBtn.classList.remove("btn-warning")
+            saveFavBtn.classList.add("btn-danger")
+            saveFavBtn.textContent = "Save as favorite"
+            showToast("Recipe succesfully deleted")
+        } else {
             addToFavs({id: idMeal, title: strMeal, img: strMealThumb})
+            saveFavBtn.classList.remove("btn-danger")
+            saveFavBtn.classList.add("btn-warning")
+            saveFavBtn.textContent = "Delete from favorites"
+            showToast("Recipe succesfully added to favorites")
         }
     }
 
@@ -160,11 +171,26 @@ const addToFavs = (recipe) => {
     console.log(recipe)
     const favRecipes = JSON.parse(localStorage.getItem("favRecipes")) ?? []
     localStorage.setItem("favRecipes", JSON.stringify([...favRecipes, recipe]))
+    console.log([...favRecipes, recipe])
 }
 
 const alreadyInFavs = (id) =>{
     const favRecipes = JSON.parse(localStorage.getItem("favRecipes")) ?? []
     return favRecipes.some((favRecipes) => favRecipes.id === id)
+}
+
+const deleteFavs = (id) => {
+    const favRecipes = JSON.parse(localStorage.getItem("favRecipes")) ?? []
+    const newFavRecipes = favRecipes.filter((favRecipes) => favRecipes.id !== id)
+    localStorage.setItem("favRecipes", JSON.stringify(newFavRecipes))
+}
+
+const showToast = (message) =>{
+    const toast = document.querySelector("#toast")
+    const toastBody = document.querySelector(".toast-body")
+    toastBody.textContent = message
+    const toastInstance = new bootstrap.Toast(toast)
+    toastInstance.show()
 }
 
 document.addEventListener("DOMContentLoaded", startApp)
